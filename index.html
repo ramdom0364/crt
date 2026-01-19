@@ -1,0 +1,572 @@
+Blackbox IDEToggle Sidebar
+
+
+Share
+
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Carta antigua</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <!-- Fuente manuscrita -->
+  <link href="https://fonts.googleapis.com/css2?family=Petit+Formal+Script&display=swap" rel="stylesheet">
+  <style>
+    body{
+      margin:0;
+      min-height:100vh;
+      background:#2a1f16;
+      font-family:'Petit Formal Script', cursive;
+      color:#2a1a12;
+      padding:24px;
+      box-sizing:border-box;
+      overflow-x:hidden;
+    }
+    /* ===== ESTILOS DEL SOBRE REALISTA ===== */
+    .envelope-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      width: 100vw;
+      position: fixed;
+      top: 0; left: 0;
+      background: #2a1f16;
+      z-index: 9999;
+      overflow-y: auto;
+    }
+
+    .envelope {
+      width: 480px;
+      max-width: 95vw;
+      height: 320px;
+      max-height: 70vw;
+      position: relative;
+      cursor: pointer;
+      perspective: 1500px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.4s ease;
+      filter: drop-shadow(0 15px 35px #00000055);
+    }
+
+    @media (max-width: 768px) {
+      .envelope {
+        width: 85vw;
+        height: 56vw;
+        max-height: 300px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .envelope {
+        width: 90vw;
+        height: 60vw;
+        max-height: 240px;
+      }
+    }
+
+    .envelope:hover {
+      transform: translateY(-8px) scale(1.02);
+      filter: drop-shadow(0 20px 50px #00000077);
+    }
+
+    .envelope.open {
+      pointer-events: none;
+    }
+
+    .envelope.open .envelope-flap,
+    .envelope.open .envelope-front,
+    .envelope.open .envelope-shadow,
+    .envelope.open .heart {
+      opacity: 0;
+      transition: opacity 0.8s ease 0.6s;
+    }
+
+    /* Cuerpo del sobre */
+    .envelope-front {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 65%;
+      background: linear-gradient(180deg, #f9f3e8 0%, #f0e4d0 40%, #e8d9bf 100%);
+      border-radius: 0 0 8px 8px;
+      z-index: 2;
+      box-shadow: 
+        inset 0 1px 2px #ffffff88,
+        inset 0 -2px 8px #00000022,
+        0 4px 12px #00000033;
+      border: 1px solid #d4c4a8;
+      border-top: none;
+    }
+
+    /* Línea divisoria horizontal en el sobre */
+    .envelope-front::after {
+      content: "";
+      position: absolute;
+      top: 45%;
+      left: 5%;
+      right: 5%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #d4c4a8, transparent);
+      z-index: 3;
+    }
+
+    /* Área para dirección (opcional visual) */
+    .envelope-front::before {
+      content: "";
+      position: absolute;
+      top: 40%;
+      left: 8%;
+      width: 55%;
+      height: 35%;
+      border: 1px dashed #d4c4a855;
+      border-radius: 2px;
+      z-index: 1;
+    }
+
+    /* Solapa del sobre */
+    .envelope-flap {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      height: 50%;
+      background: linear-gradient(180deg, #e5d0b0 0%, #dcc5a0 40%, #d1b690 100%);
+      z-index: 3;
+      transform-origin: top center;
+      transition: transform 0.85s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      box-shadow: 
+        inset 0 1px 3px #ffffff66,
+        inset 0 -2px 6px #00000033,
+        0 2px 8px #00000022;
+      border: 1px solid #cbb488;
+      border-bottom: none;
+    }
+
+    /* Brillo en la solapa */
+    .envelope-flap::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #ffffff88, transparent);
+      z-index: 4;
+    }
+
+    /* Punta triangular de la solapa */
+    .envelope-flap::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: -25px;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 240px solid transparent;
+      border-right: 240px solid transparent;
+      border-top: 25px solid #d1b690;
+      z-index: 5;
+      opacity: 1;
+      transition: opacity 0.6s;
+    }
+
+    @media (max-width: 768px) {
+      .envelope-flap::after {
+        border-left: 30vw solid transparent;
+        border-right: 30vw solid transparent;
+        border-top: 3vw solid #d1b690;
+        bottom: -3vw;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .envelope-flap::after {
+        border-left: 25vw solid transparent;
+        border-right: 25vw solid transparent;
+        border-top: 3.5vw solid #d1b690;
+        bottom: -3.5vw;
+      }
+    }
+
+    /* Sombra de profundidad */
+    .envelope-shadow {
+      position: absolute;
+      bottom: -25px;
+      left: 10%;
+      right: 10%;
+      height: 20px;
+      background: radial-gradient(ellipse at center, #00000044 0%, transparent 75%);
+      filter: blur(4px);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Corazón en el sobre */
+    .heart {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      opacity: 1;
+      transition: opacity 0.6s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 60px;
+      line-height: 1;
+    }
+
+    .heart::before {
+      content: "💖";
+    }
+
+    .heart::after {
+      content: none;
+    }
+
+    /* Ocultar corazón cuando el sobre se abre */
+    .envelope.open .heart {
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    /* Contenedor de la carta */
+    .envelope-letter {
+      position: absolute;
+      left: 8%;
+      width: 84%;
+      top: 12%;
+      height: 72%;
+      opacity: 0;
+      transform: translateY(40px) scale(0.95) rotateX(20deg);
+      transition: all 0.7s cubic-bezier(0.23, 1, 0.320, 1) 0.15s;
+      z-index: 4;
+      pointer-events: none;
+      perspective: 1200px;
+      display: block;
+    }
+
+    .envelope.open .envelope-flap {
+      transform: rotateX(-165deg);
+    }
+
+    .envelope.open .envelope-letter {
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+      position: static;
+      width: 100%;
+      max-width: 720px;
+      height: auto !important;
+      z-index: 10000;
+      margin: 0 auto 24px auto;
+      display: block;
+      box-sizing: border-box;
+      padding: 0 2vw;
+    }
+
+    @media (max-width: 600px) {
+      .envelope.open .envelope-letter {
+        width: 100%;
+        max-width: 100vw;
+        margin: 0;
+        padding: 0 1vw;
+      }
+    }
+
+    /* ===== ESTILOS DE LA CARTA ===== */
+    .paper{
+      width:min(720px,94vw);
+      max-width:100vw;
+      background:
+        radial-gradient(900px 600px at 50% 20%, rgba(255,255,255,.18), transparent 60%),
+        radial-gradient(260px 220px at 18% 78%, rgba(120,74,39,.18), transparent 62%),
+        radial-gradient(220px 170px at 80% 28%, rgba(120,74,39,.22), transparent 62%),
+        linear-gradient(180deg,#f0d7a3,#e2c08a);
+      border:1px solid rgba(42,26,18,.25);
+      box-shadow:0 18px 48px rgba(0,0,0,.35);
+      border-radius:6px;
+      padding:64px 54px;
+      position:relative;
+      box-sizing:border-box;
+    }
+
+    .paper__lines {
+      position:absolute;
+      left:0; top:0; right:0; bottom:0;
+      z-index:0;
+      pointer-events:none;
+      background:
+        repeating-linear-gradient(
+          to bottom,
+          rgba(120,74,39,0.10) 0px,
+          rgba(120,74,39,0.10) 2px,
+          transparent 2px,
+          transparent 36px
+        );
+      border-radius:6px;
+    }
+
+    .paper__margin {
+      position: absolute;
+      top: 0; left: 44px; bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, #d66 90%, transparent 100%);
+      opacity: 0.45;
+      z-index: 2;
+      border-radius: 2px;
+      pointer-events: none;
+    }
+
+    /* Textura de papel sutil */
+    .paper::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.18;
+      background: url('https://www.transparenttextures.com/patterns/old-mathematics.png');
+      mix-blend-mode: multiply;
+      border-radius: 6px;
+    }
+
+    /* Sombra de "tinta" manuscrita */
+    .paper .body p, .paper .closing, .paper .editable {
+      text-shadow: 0 1px 0 #fff6, 0 2px 2px #a97c4a33;
+    }
+
+    .paper > * { position:relative; z-index:1; }
+
+    /* manchas y bordes gastados */
+    .paper::after{
+      content:"";
+      position:absolute;
+      inset:-24px;
+      background:
+        radial-gradient(40px 36px at 10% 14%, rgba(0,0,0,.22), transparent 62%),
+        radial-gradient(54px 44px at 90% 18%, rgba(0,0,0,.18), transparent 62%),
+        radial-gradient(66px 58px at 20% 92%, rgba(0,0,0,.14), transparent 62%),
+        radial-gradient(48px 42px at 92% 84%, rgba(0,0,0,.20), transparent 62%);
+      filter:blur(1px);
+      opacity:.75;
+      pointer-events:none;
+    }
+
+    h1{
+      text-align:center;
+      font-size:28px;
+      margin:0 0 18px;
+      text-decoration:underline;
+    }
+
+    .meta{
+      display:flex;
+      justify-content:space-between;
+      font-size:18px;
+      margin-bottom:12px;
+    }
+
+    .line{
+      height:1px;
+      background:rgba(42,26,18,.25);
+      margin:14px 0;
+    }
+
+    .editable{
+      outline:none;
+      padding:2px 6px;
+      border-radius:6px;
+    }
+
+    .editable:focus{
+      background:rgba(255,255,255,.35);
+      box-shadow:0 0 0 1px rgba(42,26,18,.18) inset;
+    }
+
+    .body p{
+      font-size:22px;
+      line-height:1.7;
+      margin:0 0 14px;
+    }
+
+    .closing{
+      margin-top:24px;
+      font-size:22px;
+    }
+    
+    @media (max-width: 600px) {
+      body {
+        padding: 6px;
+      }
+      .paper {
+        padding: 18vw 4vw 12vw 4vw;
+        font-size: 16px;
+        min-width: unset;
+        width: 100vw;
+        border-radius: 2vw;
+      }
+      .envelope {
+        width: 98vw;
+        height: 54vw;
+        min-width: 0;
+        min-height: 0;
+      }
+      .envelope-letter {
+        left: 2vw;
+        width: 96vw;
+        top: 12vw;
+        height: 40vw;
+      }
+      h1 {
+        font-size: 7vw;
+      }
+      .meta {
+        font-size: 4vw;
+        flex-direction: column;
+        gap: 2vw;
+        align-items: flex-start;
+      }
+      .body p, .closing {
+        font-size: 5vw;
+      }
+      .closing {
+        margin-top: 7vw;
+      }
+    }
+
+    @media print{
+      body{background:white;padding:0;}
+      .paper{box-shadow:none;border-radius:0;}
+    }
+  </style>
+</head>
+<body>
+  <!-- Música automática desde URL -->
+  <audio id="musica" loop>
+    <source src="musica/cardigan.mp3" type="audio/mpeg">
+  </audio>
+  <script>
+    document.addEventListener('click',()=>{
+      document.getElementById('musica').play();
+    },{once:true});
+  </script>
+  <div class="envelope-container">
+    <div class="envelope" id="envelope">
+      <div class="envelope-flap"></div>
+      <div class="envelope-front">
+        <div class="heart"></div>
+      </div>
+      <div class="envelope-shadow"></div>
+      <div class="envelope-letter" id="envelope-letter">
+        <main class="paper">
+          <div class="paper__lines"></div>
+          <div class="paper__margin"></div>
+          <div class="meta">
+            <div class="editable" contenteditable="true">Horqueta</div>
+            <div id="fecha"></div>
+          </div>
+          <h1></h1>
+          <div class="line"></div>
+          <p style="font-size:22px;">
+            Mi querida mj amikita<span class="editable" contenteditable="true">Dara</span>,
+          </p>
+          <div class="line"></div>
+          <section class="body editable" contenteditable="true">
+            <p>
+              Te escribí esta pequeña carta para aclarar las cosas como dijiste.tp, se q siempre todos
+              necesitamos tiempo de pensar las cosas, como yo q llevé pensando
+              2 semanas para hacer un plan, y entiendo q te enojaste, cualquiera lo haría, yo tmb me
+              enojé tmb, pero como dijiste no me duró mucho, me costó mucho dejar de hablarte así por
+              un tiempo pq tenía en mente un plan q me beneficiaria y me imagino q a ti tmb, y la vrd q
+              no hiciste nd malo, bueno si hiciste algo q me molestó pero no pasa nd, seguro no fué 
+              intencional, pero te perdono de todo por más q no sea gran cosa, y no te preocupes, nadie
+              es perfecto, yo tampoco lo soy, pero el punto es hacer q parezcamos perfectos para quién 
+              realmente amamos, osea hacerle sentir amado, y comprendo q no quieres hacerme daño, a 
+              veces hacemos daño sin darnos cuenta, a veces pensando q no será nd malo pero a la otra
+              persona le dolerá o lo tomará diferente.
+            </p>
+            <p>
+              No te preocupes, el hecho de no ser igual está super bien, q tengamos vistas distintas
+              está bien por eso debemos luchar por nuestra amistad para evitar perder tan hermosa 
+              amistad como la q tenemos, y nuevamente digo q no te preocupes por q no seas suficiente,
+              yo tampoco soy suficiente seguro para tii, pero na mas nos falta mejorar algunos aspectos
+              y allí ya seremos la amistad perfecta 10/10, y entiendo q no sos de demostrar la 
+              importancia q sientes o loq amas, pero siempre q sea en persona lo demuestras al 1000,
+              nd de q quejarme, nd más por chat loq hay ese detalle pero no es gran cosa, solo es 
+              cuestión de mejorar un poquito y listo, nd fuera de lo normal.
+            </p>
+            <p>
+              me alegra bastante q q valores los esfuerzos, me encanta cuando alguien valora aunq sea
+              lo mínimo y me alegra que estés agradecida por todo, yo tmb te agradezco muchísimo, sé q
+              te esfuerzas mucho por mí y eso no cualquiera lo hace, por tood eso gracias por el esfuer-
+              zo y espero que cada día nos esforcemos más y más por vencer esos mal caminos q la vida
+              nos da y espero q con todo eso podamos avanzar y demostrar q somos capaces de sobrellevar
+              nuestra amistad hasta donde Dios diga, y ntp no hace falta q me des espacio, almenos desde
+              ahora, ya estoy completamente bien sin nd malo, y cómo dicen los brasileños,
+              boa tardee💖💖te quiero mushoo💖💖
+            </p>
+            <p></p>
+          </section>
+          <div class="line"></div>
+          <div class="closing">
+            Con Mucho amor<br>
+            <span class="editable" contenteditable="true">Bodrii</span>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Fecha
+    const f=new Intl.DateTimeFormat('es-ES',{day:'2-digit',month:'long',year:'numeric'});
+    document.getElementById('fecha').textContent=f.format(new Date());
+
+    // Sobre animado
+    const envelope = document.getElementById('envelope');
+    let open = false;
+    envelope.addEventListener('click', function(e) {
+      if (!open) {
+        envelope.classList.add('open');
+        open = true;
+      }
+    });
+  </script>
+</body>
+</html>
+<!doctype html>
+<html lang="es">
+<head>
+  <!-- ... (el resto del head permanece igual) ... -->
+  <style>
+    /* ... (todos los estilos anteriores permanecen iguales, excepto los siguientes cambios) ... */
+
+    /* Modificación en .envelope.open .envelope-letter para asegurar que la carta se vea completa */
+    .envelope.open .envelope-letter {
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+      position: static;
+      width: 100%;
+      max-width: 720px;
+      height: auto !important;
+      z-index: 10000;
+      margin: 0 auto 24px auto;
+      display: block;
+      box-sizing: border-box;
+      padding: 0 2vw;
+      /* NUEVO: Agregar overflow-y para scroll si el contenido es largo, y max-height para limitar al viewport */
+      overflow-y: auto;
+      max-height: 80vh; /* Limita la altura al 80% de la pantalla para evitar que se salga */
+      min-height: 400px; /* Asegura una altura mínima para que no se vea demasiado pequeña */
+    }
